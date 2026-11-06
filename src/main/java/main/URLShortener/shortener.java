@@ -1,4 +1,4 @@
-package main.URLShortener.shortener;
+package main.URLShortener;
 
 
 public class shortener {

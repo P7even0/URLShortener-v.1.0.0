@@ -24,4 +24,11 @@ public class memory {
 
 
     }
+
+    public static void printReqs(){
+        for (int i = 0; i  < savedRequests.size(); i++){
+            System.out.println(savedRequests.get(i));
+        }
+    }
+
 }
