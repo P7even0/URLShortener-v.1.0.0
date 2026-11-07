@@ -14,6 +14,5 @@ public record Request(int id, String shortenedURL, String originalURL){
     public String getShortenedUrl(){
         return this.shortenedURL;
     }
-
 }
 

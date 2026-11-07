@@ -1,5 +1,5 @@
 package main.URLShortener;
-
+import main.URLShortener.memory;
 
 public class shortener {
     public static int LENGTH = 8;
@@ -13,6 +13,14 @@ public class shortener {
 
         return result;
 
+    }
+
+    public static String checkCode(String code){
+        while (memory.findReqWithCode(code) != null){
+            code = generateUrl();
+        }
+
+        return code;
     }
 
 

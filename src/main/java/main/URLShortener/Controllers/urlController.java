@@ -1,6 +1,7 @@
 package main.URLShortener.Controllers;
-
+import main.URLShortener.isValid;
 import main.URLShortener.Response;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,6 +17,7 @@ import java.util.Map;
 
 @RestController
 public class urlController {
+    private static final Object lock = new Object();
     public static int idCount = 0;
     @GetMapping("/{code}")
     public ResponseEntity<?> fetchOriginalUrl(@PathVariable("code") String code){
@@ -34,39 +36,22 @@ public class urlController {
         String code = shortener.generateUrl();
         String originalUrl = content.get("url");
 
-        if (originalUrl == null || originalUrl.isBlank()) return ResponseEntity.status(400).body("URL is blank or null");
+        ResponseEntity response = isValid.validateURL(originalUrl);
 
-        try {
-            URI uri = URI.create(originalUrl);
+        if (!(response.getStatusCode().equals(HttpStatus.OK))) return response;
+        synchronized (lock) {
+            shortener.checkCode(code);
+            Response res = memory.addURL(new Request(idCount, code, originalUrl));
 
-            String scheme = uri.getScheme();
-            if (scheme == null || !(scheme.equalsIgnoreCase("http") || scheme.equalsIgnoreCase("https"))) return ResponseEntity.status(400).body("Invalid scheme; use http or https");
-
-            String host = uri.getHost();
-            if (host == null || host.equalsIgnoreCase("localhost") || host.equalsIgnoreCase("127.0.0.1")) return ResponseEntity.status(400).body("Invalid host");
-
-
-            int port = uri.getPort();
-
-            if ((port < -1 ) || port > 65535) return ResponseEntity.status(400).body("Invalid port");
-
-
-
-        } catch (IllegalArgumentException e){
-            return ResponseEntity.status(400).body("Bad request");
+            if (res.getExitStatus() == 200) {
+                idCount++;
+                return ResponseEntity.status(200).body(("Successfully created URL with code: ") + code);
+            }
         }
 
+            return ResponseEntity.status(400).body("Malformed request.");
 
 
-
-        Response res = memory.addURL(new Request(idCount, code, originalUrl));
-
-        if (res.getExitStatus() == 200){
-            idCount++;
-            return ResponseEntity.status(200).body(("Successfully created URL with code: ") + code);
-        }
-
-        return ResponseEntity.status(400).body("Malformed request.");
     }
 
 

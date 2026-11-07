@@ -10,10 +10,9 @@ public class memory {
 
     public static Response addURL(Request req){
         String code = req.getShortenedUrl();
-        if (savedRequests.contains(req)){
-            return new Response("Code already exists", 400);
-        }
         savedRequests.putIfAbsent(code, req);
+
+        if (findReqWithCode(code) == null) return new Response("Error adding to memory", 400);
 
         return new Response("Added new URL successfully", 200);
     }
