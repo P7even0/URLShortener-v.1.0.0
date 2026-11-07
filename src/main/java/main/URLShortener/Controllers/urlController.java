@@ -39,19 +39,25 @@ public class urlController {
         ResponseEntity response = isValid.validateURL(originalUrl);
 
         if (!(response.getStatusCode().equals(HttpStatus.OK))) return response;
+
+        ResponseEntity<?> res = concurrencyCreateNewUrl(code, originalUrl);
+        return res;
+    }
+
+    public static ResponseEntity<?> concurrencyCreateNewUrl(String code, String originalUrl){
         synchronized (lock) {
-            shortener.checkCode(code);
+            code = shortener.checkCode(code);
             Response res = memory.addURL(new Request(idCount, code, originalUrl));
 
             if (res.getExitStatus() == 200) {
                 idCount++;
                 return ResponseEntity.status(200).body(("Successfully created URL with code: ") + code);
             }
-        }
+
 
             return ResponseEntity.status(400).body("Malformed request.");
 
-
+        }
     }
 
 

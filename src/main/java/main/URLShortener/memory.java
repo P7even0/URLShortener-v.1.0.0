@@ -20,7 +20,13 @@ public class memory {
     public static Request findReqWithCode(String code){
 
         return savedRequests.getOrDefault(code, null);
+    }
 
+    public static int getLength(){
+        return savedRequests.size();
+    }
 
+    public static void clearHashMap(){
+        savedRequests.clear();
     }
 }

@@ -1,6 +1,6 @@
 package main.URLShortener;
 
-
+import main.URLShortener.Controllers.urlController;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
@@ -12,6 +12,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.*;
 
 @SpringBootTest
 class UrlShortenerApplicationTests {
@@ -91,4 +95,44 @@ class UrlShortenerApplicationTests {
 		);
 	}
 
+	@Test
+	void threadsShouldNotCreateDuplicates() throws InterruptedException, ExecutionException{
+		memory.clearHashMap();
+		List<Future<ResponseEntity<?>>> finalResults = new ArrayList<>();
+		ExecutorService executor = Executors.newFixedThreadPool(10);
+
+		for (int i = 0; i < 100; i++){
+			Future<ResponseEntity<?>> future = executor.submit(() -> {
+				String code = "test123";
+				ResponseEntity<?> res = urlController.concurrencyCreateNewUrl(code, "http://example.com");
+
+
+				return res;
+			});
+
+
+			finalResults.add(future);
+		}
+
+		executor.shutdown();
+
+
+		for (Future<ResponseEntity<?>> future : finalResults){
+			ResponseEntity<?> response = future.get();
+
+			Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+		}
+		boolean finished = executor.awaitTermination(10, TimeUnit.SECONDS);
+
+		Assertions.assertTrue(finished);
+
+		// Assert all 100 requests were saved
+		Assertions.assertEquals(100, memory.getLength());
+
+
+
+	}
+
+
 }
+
