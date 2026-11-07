@@ -103,6 +103,7 @@ class UrlShortenerApplicationTests {
 
 		for (int i = 0; i < 100; i++){
 			Future<ResponseEntity<?>> future = executor.submit(() -> {
+				// This can be replaced by memory.shortenerUrl()
 				String code = "test123";
 				ResponseEntity<?> res = urlController.concurrencyCreateNewUrl(code, "http://example.com");
 
