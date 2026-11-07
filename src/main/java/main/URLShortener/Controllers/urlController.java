@@ -23,9 +23,6 @@ public class urlController {
     public ResponseEntity<?> fetchOriginalUrl(@PathVariable("code") String code){
         Request req = memory.findReqWithCode(code);
 
-
-
-
         if (req == null) return ResponseEntity.status(404).body("Not a valid URL");
 
         return ResponseEntity.status(302).location(URI.create(req.getOriginalUrl())).build();
